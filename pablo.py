@@ -22,8 +22,6 @@ topic_temperatura_medie = 'nodemcu/medie'
 topic_prag_inferior = 'nodemcu/prag/inferior'
 topic_prag_superior = 'nodemcu/prag/superior'
 topic_diferenta = 'nodemcu/diferenta'
-topic_wifi_senzor1 = 'temperaturi/wifi/senzor1'
-topic_wifi_senzor2 = 'temperaturi/wifi/senzor2'
 
 perioada=1.0 #valorile curente
 temperatura_medie=11.1 #sunt irelevante intrucat vor fi citite din baza de date
@@ -45,8 +43,13 @@ def on_connect(client, userdata, flags, rc):
         print('Conexiunea a esuat cu codul: ', rc)
 def on_disconnect(client, userdata, rc):
     client.connected_flag = False
-    client.loop_stop()
     print('Clientul s-a deconectat cu codul: ', rc)
+    if rc < 7:
+        client.loop_stop()
+        print('Este o eroare grava...')
+        exit(-4)
+    else:
+        client.bad_connection_flag = True #pentru a se putea reconecta clientul
 def on_publish(client, userdata, result):
     print('Mesajul a fost trimis cu codul ', result)
 
@@ -68,14 +71,14 @@ while not client.bad_connection_flag and not client.connected_flag: #cat timp nu
 if client.bad_connection_flag:
     client.loop_stop() #incheiem bucla de procesare a evenimentelor
     exit(-2) #iesim fortat
-while client.connected_flag:
+while client.connected_flag or client.bad_connection_flag:
     try:
         my_cursor.execute('select perioada from camere where nume_camera = \'albastra\'')#achizitie perioada
         try:
             perioada = my_cursor.fetchall()[0][0]
         except:
             print('Nu exista inca date din tabela camerelor!!!')
-        if(temperatura_medie is None):
+        if(perioada is None):
             print('Informatiile despre camere sunt absente!!!')
         else:
             perioada = int(perioada)
@@ -84,7 +87,7 @@ while client.connected_flag:
             prag_inferior = my_cursor.fetchall()[0][0]
         except:
             print('Nu exista inca date din tabela camerelor - perioada!!!')
-        if(temperatura_medie is None):
+        if(prag_inferior is None):
             print('Informatiile despre camere sunt absente - perioada!!!')
         else:
             prag_inferior = float(prag_inferior)
@@ -93,7 +96,7 @@ while client.connected_flag:
             prag_superior = my_cursor.fetchall()[0][0]
         except:
             print('Nu exista inca date din tabela camerelor - prag superior!!!')
-        if(temperatura_medie is None):
+        if(prag_superior is None):
             print('Informatiile despre camere sunt absente - prag superior!!!')
         else:
             prag_superior = float(prag_superior)
@@ -102,7 +105,7 @@ while client.connected_flag:
             diferenta = my_cursor.fetchall()[0][0]
         except:
             print('Nu exista inca date din tabela camerelor - diferenta temperaturi termistori !!!')
-        if(temperatura_medie is None):
+        if(diferenta is None):
             print('Informatiile despre camere sunt absente - diferenta temperaturi terminstori !!!')
         else:
             diferenta = float(diferenta)
