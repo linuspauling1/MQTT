@@ -86,6 +86,7 @@ while client.connected_flag or client.bad_connection_flag:
     print('q1 are dimensiunea: ',q1.qsize(),' si q2: ',q2.qsize())
     while not q1.empty() and not q2.empty():
         (t1,t2) = (q1.get(),q2.get()) #puteam nota direct parametri, insa este mai elegant asa
+        db.commit()
         try:
             params = [100] #valoarea buffer-ului mysql va fi 100
             try:
@@ -98,7 +99,6 @@ while client.connected_flag or client.bad_connection_flag:
                 cursorul_meu.execute('insert into temperaturi(nume_camera, temperatura_wifith1, temperatura_wifith2) values(\'albastra\',%s, %s)',(t1,t2))
             except:
                 print('Insertie defectuaosa, deci sunt parametri gresiti...')
-            db.commit()
         except:
             print('Nu exista inca baza de date!!!')
             time.sleep(1)
