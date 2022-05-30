@@ -40,14 +40,12 @@ def on_connect(client, userdata, flags, rc):
         print('Nu am putut sa ne abonam la canalul cu datele primite de la senzori...')
         exit(-3)
 def on_disconnect(client, userdata, rc):
-    client.connected_flag = False
     print('Clientul s-a deconectat cu codul: ', rc)
     if rc < 7:
+        client.connected_flag = False
         client.loop_stop()
         print('Este o eroare grava...')
         exit(-4)
-    else:
-        client.bad_connection_flag = True #pentru a putea reveni in bucla
 def on_subscribe(client, userdata, mid, granted_qos):
     print('Identificaoturl de mesaj emis : ',mid)
     pass
@@ -86,7 +84,6 @@ while client.connected_flag or client.bad_connection_flag:
     print('q1 are dimensiunea: ',q1.qsize(),' si q2: ',q2.qsize())
     while not q1.empty() and not q2.empty():
         (t1,t2) = (q1.get(),q2.get()) #puteam nota direct parametri, insa este mai elegant asa
-        db.commit()
         try:
             params = [100] #valoarea buffer-ului mysql va fi 100
             try:
@@ -99,6 +96,9 @@ while client.connected_flag or client.bad_connection_flag:
                 cursorul_meu.execute('insert into temperaturi(nume_camera, temperatura_wifith1, temperatura_wifith2) values(\'albastra\',%s, %s)',(t1,t2))
             except:
                 print('Insertie defectuaosa, deci sunt parametri gresiti...')
+                time.sleep(1)
+                continue
+            db.commit()
         except:
             print('Nu exista inca baza de date!!!')
             time.sleep(1)
@@ -112,7 +112,7 @@ while client.connected_flag or client.bad_connection_flag:
                 cursorul_meu = db.cursor()
             except:
                 print('Reconectare esuata...')
-    time.sleep(1)
+    time.sleep(1) #perioada este diferita de cea pentru achizitia unei temepraturi
 cursorul_meu.close()
 client.loop_stop()
 client.disconnect()

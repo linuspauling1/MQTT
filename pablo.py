@@ -42,14 +42,12 @@ def on_connect(client, userdata, flags, rc):
         client.bad_connection_flag = True #setam fanionul ca sa putem iesi din script
         print('Conexiunea a esuat cu codul: ', rc)
 def on_disconnect(client, userdata, rc):
-    client.connected_flag = False
     print('Clientul s-a deconectat cu codul: ', rc)
     if rc < 7:
+        client.connected_flag = False
         client.loop_stop()
         print('Este o eroare grava...')
         exit(-4)
-    else:
-        client.bad_connection_flag = True #pentru a se putea reconecta clientul
 def on_publish(client, userdata, result):
     print('Mesajul a fost trimis cu codul ', result)
 
@@ -71,6 +69,7 @@ while not client.bad_connection_flag and not client.connected_flag: #cat timp nu
 if client.bad_connection_flag:
     client.loop_stop() #incheiem bucla de procesare a evenimentelor
     exit(-2) #iesim fortat
+client.loop_stop() #oprim firul buclei intrucat o vom apela periodic
 while client.connected_flag or client.bad_connection_flag:
     try:
         my_cursor.execute('select perioada from camere where nume_camera = \'albastra\'')#achizitie perioada
@@ -100,7 +99,7 @@ while client.connected_flag or client.bad_connection_flag:
             print('Informatiile despre camere sunt absente - prag superior!!!')
         else:
             prag_superior = float(prag_superior)
-        my_cursor.execute('select diferenta_wifi from camere where nume_camera = \'albastra\'')#achizitie diferenta
+        my_cursor.execute('select diferenta from camere where nume_camera = \'albastra\'')#achizitie diferenta
         try:
             diferenta = my_cursor.fetchall()[0][0]
         except:
@@ -135,24 +134,24 @@ while client.connected_flag or client.bad_connection_flag:
     if ante_perioada != perioada:
         client.publish(topic_perioada, perioada, qos, retain)
         ante_perioada = perioada
-        print(perioada)
+        print('Noua perioada: ',perioada)
     if ante_prag_inferior != prag_inferior:
         client.publish(topic_prag_inferior, prag_inferior, qos, retain)
         ante_prag_inferior = prag_inferior
-        print(prag_inferior)
+        print('Noul prag inferior: ',prag_inferior)
     if ante_prag_superior != prag_superior:
         client.publish(topic_prag_superior, prag_superior, qos, retain)
         ante_prag_superior = prag_superior
-        print(prag_superior)
+        print('Noul prag superior: ',prag_superior)
     if ante_diferenta != diferenta:
         client.publish(topic_diferenta, diferenta, qos, retain)
         ante_diferenta = diferenta
-        print(diferenta)
+        print('Noua diferenta: ',diferenta)
     if ante_temperatura_medie != temperatura_medie:
         client.publish(topic_temperatura_medie, temperatura_medie, qos, retain)
         ante_temperatura_medie = temperatura_medie
-        print(temperatura_medie)
+        print('Noua temperatura medie: ',temperatura_medie)
+    client.loop() #apelam bucla pentru fiecare ciclare
     time.sleep(perioada/1000) #perioada este aceeasi ca pentru achizitia temperaturii
 my_cursor.close() #nu mai folosim cursorul
-client.loop_stop() #oprim bucla
 client.disconnect() #ne deconectam
