@@ -99,8 +99,8 @@ if client.bad_connection_flag:
     exit(-2)
 while not client.bad_connection_flag:
     print('q1 are dimensiunea: ',q1.qsize(),' si q2: ',q2.qsize())
-    while not q1.empty() and not q2.empty(): # and not q3.empty()
-        (t1,t2) = (q1.get(),q2.get()) #,q3.get()) # indiferent de succesul operatiunilor, vom muta in permanenta elementele din cozi - sunt de timp real
+    while not q1.empty() and not q2.empty() and not q3.empty():
+        (t1,t2,t3) = (q1.get(),q2.get(),q3.get()) # indiferent de succesul operatiunilor, vom muta in permanenta elementele din cozi - sunt de timp real
         try:
             params = [buffer_size]
             try:
@@ -110,7 +110,8 @@ while not client.bad_connection_flag:
                 time.sleep(1)
                 break
             try: #nu va ramane asa, trebuie citit si senzorul 1-wire
-                cursorul_meu.execute('insert into temperaturi(nume_camera, temperatura_wifith1, temperatura_wifith2) values(\'albastra\',%s, %s %s)',(t1,t2,'25'))
+                cursorul_meu.execute('insert into temperaturi(nume_camera, temperatura_wifith1, temperatura_wifith2, temperatura_1wire) \
+                values(\'albastra\',%s, %s, %s)',(t1,t2,t3))
             except:
                 print('Insertie defectuaosa, deci sunt parametri gresiti...')
                 time.sleep(1)
