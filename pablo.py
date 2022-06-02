@@ -44,12 +44,13 @@ def on_disconnect(client, userdata, rc):
     if rc == 0:
         print('Clientul s-a deconectat... Totul este bine.')
     else:
-        print('Clientul s-a deconectat cu codul: ', rc,' ... Incercam reconectarea...')
-        if rc > 0 and rc < 7:
+        if rc < 7:
             client.connected_flag = False
             client.loop_stop()
             print('Clientul s-a deconectat cu codul ',rc,' ... Este o eroare grava ...')
-            exit(-4)
+            exit(-3)
+        else:
+            print('Clientul s-a deconectat cu codul: ', rc,' ... Incercam reconectarea...')
 def on_publish(client, userdata, result):
     print('Mesajul a fost trimis cu codul ', result)
 
@@ -71,9 +72,7 @@ while not client.bad_connection_flag and not client.connected_flag: #cat timp nu
 if client.bad_connection_flag:
     client.loop_stop() #incheiem bucla de procesare a evenimentelor
     exit(-2) #iesim fortat
-#client.loop_stop() #oprim firul buclei intrucat o vom apela periodic
 while not client.bad_connection_flag:
-    #client.loop() #apelam bucla pentru fiecare ciclare
     if client.connected_flag:
         try:
             mydb.commit()
@@ -130,8 +129,9 @@ while not client.bad_connection_flag:
             except:
                 print('Nu exista inca date din tabela camerelor - diferenta temperaturi termistori !!!')
             mydb.commit()
-        except:
-            print('Nu exista inca baza de date!!!')
+        except Exception as e:
+            print('Nu este disponibila baza de date sau tabelele sunt alterate!!!')
+            print('Mesajul de eroare este ', e)
             time.sleep(1)
             try:
                 mydb = mysql.connector.connect(
@@ -141,6 +141,7 @@ while not client.bad_connection_flag:
                     database = 'bazaDeDate'
                 )
                 my_cursor = mydb.cursor()
+                print('Reconectare reusita!!!')
             except:
                 print('Reconectare esuata...')
     time.sleep(perioada/1000) #perioada este aceeasi ca pentru achizitia temperaturii

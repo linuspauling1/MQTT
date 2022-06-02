@@ -12,14 +12,21 @@ host = '101.232.174.243'
 port_insecure = 1883 #portul securizat fiind 8883
 qos = 2 #calitatea maxima
 buffer_size = 100 #dimensiunea circular buffer-ului MySQL
-#stabilim o conexiune cu baza de date mysql
-db = conexiune.connect(
-    host = host,
-    user = 'root',
-    passwd = 'prikoke',
-    database = 'bazaDeDate'
-)
-cursorul_meu = db.cursor()
+conexiune_my_sql = False#stabilim o conexiune cu baza de date mysql
+while not conexiune_my_sql:
+    try:
+        db = mysql.connector.connect(
+            host = '101.232.174.243',
+            user = 'root',
+            passwd = 'prikoke',
+            database = 'bazaDeDate'
+        )
+        cursorul_meu = db.cursor()
+        conexiune_my_sql = True
+        print('Conexiunea cu baza de date reusita!')
+    except:
+        print('Reconectare esuata...')
+        time.sleep(1)
 #numele canalelor:
 topic_1wire = 'temperaturi/1wire'
 topic_wifi_senzor1 = 'temperaturi/wifi/senzor1'
@@ -30,27 +37,27 @@ def on_connect(client, userdata, flags, rc):
     if rc == 0:
         client.connected_flag = True
         print('M-am conectat.') #daca return code-ul este nul, atunci conexiunea este viabila
+        try: #incercam sa ne abonam la canalele pentru senzorii wifi
+            (result, mid) = client.subscribe(topic_wifi, qos)
+            while result != 0: #daca rezultatul este nul atunci conexiunea este slaba si trebuie refacuta
+                print('... ...')
+                (result, mid) = client.subscribe(topic_wifi, qos)
+            print('Am reusit abaonarea la canlul cu identificatorul de mesaj: ', mid)
+        except: #daca primim o excpetie trebuie sa iesim din program intrucat sunt parametri incorecti
+            print('Nu am putut sa ne abonam la canalul cu datele primite de la senzori...')
+            exit(-3)
+        try: #incercam sa ne abonam la canalul pentru senzorul 1-wire
+            (result_1wire, mid_1wire) = client.subscribe(topic_1wire, qos)
+            while result_1wire != 0:
+                print('... ... ...')
+                (result_1wire, mid_1wire) = client.subscribe(topic_1wire, qos)
+            print('Am reusit abaonarea la canlul pentru senzorul 1-wire cu identificatorul de mesaj: ', mid)
+        except:
+            print('Nu am putut sa ne abonam la canalul cu datele primite de la senzorul 1wire...')
+            exit(-3)
     else:
         client.bad_connection_flag = True
         print('Eroare la conexiune cu codul: ',rc) #altfel nu
-    try: #incercam sa ne abonam la canalele pentru senzorii wifi
-        (result, mid) = client.subscribe(topic_wifi, qos)
-        while result != 0: #daca rezultatul este nul atunci conexiunea este slaba si trebuie refacuta
-            print('... ...')
-            (result, mid) = client.subscribe(topic_wifi, qos)
-        print('Am reusit abaonarea la canlul cu identificatorul de mesaj: ', mid)
-    except: #daca primim o excpetie trebuie sa iesim din program intrucat sunt parametri incorecti
-        print('Nu am putut sa ne abonam la canalul cu datele primite de la senzori...')
-        exit(-3)
-    try: #incercam sa ne abonam la canalul pentru senzorul 1-wire
-        (result_1wire, mid_1wire) = client.subscribe(topic_1wire, qos)
-        while result_1wire != 0:
-            print('... ... ...')
-            (result_1wire, mid_1wire) = client.subscribe(topic_1wire, qos)
-        print('Am reusit abaonarea la canlul pentru senzorul 1-wire cu identificatorul de mesaj: ', mid)
-    except:
-        print('Nu am putut sa ne abonam la canalul cu datele primite de la senzorul 1wire...')
-        exit(-3)
 def on_disconnect(client, userdata, rc):
     if rc == 0:
         print('Clientul s-a deconectat...Totul este bine.')
@@ -103,13 +110,8 @@ while not client.bad_connection_flag:
         (t1,t2,t3) = (q1.get(),q2.get(),q3.get()) # indiferent de succesul operatiunilor, vom muta in permanenta elementele din cozi - sunt de timp real
         try:
             params = [buffer_size]
+            cursorul_meu.callproc('adaugare',params) #presupunem ca inseram parametri corecti
             try:
-                cursorul_meu.callproc('adaugare',params)
-            except:
-                print('Nu merge adaugarea, deci sunt parametri gresiti...')
-                time.sleep(1)
-                break
-            try: #nu va ramane asa, trebuie citit si senzorul 1-wire
                 cursorul_meu.execute('insert into temperaturi(nume_camera, temperatura_wifith1, temperatura_wifith2, temperatura_1wire) \
                 values(\'albastra\',%s, %s, %s)',(t1,t2,t3))
             except:
@@ -117,8 +119,9 @@ while not client.bad_connection_flag:
                 time.sleep(1)
                 break 
             db.commit()
-        except:
+        except Exception as e:
             print('Nu exista inca baza de date!!!')
+            print('Mesajul de eorare: ', e)
             time.sleep(1)
             try:
                 db = mysql.connector.connect(
