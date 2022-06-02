@@ -8,15 +8,20 @@ host = '101.232.174.243' #ip server
 qos = 2 #folosim calitatea maxima astfel incat sa nu avem probleme cu deconectarea
 clean_session = False #vom stoca informatiile netrimise
 retain = True #vom stoca ultimul mesaj
-
-mydb = mysql.connector.connect( #ne conectam la baza de date
-    host = host,
-    user = 'root',
-    passwd = 'prikoke',
-    database = 'bazaDeDate'
-)
-my_cursor=mydb.cursor() #generam o instanta pentru un cursor
-
+my_sql_conexiune = False;
+while not my_sql_conexiune:
+    try:
+        mydb = mysql.connector.connect( #ne conectam la baza de date
+            host = host,
+            user = 'root',
+            passwd = 'prikoke',
+            database = 'bazaDeDate'
+        )
+        my_cursor=mydb.cursor() #generam o instanta pentru un cursor
+        my_sql_conexiune = True
+    except:
+        print('Conectarea la serverul MySQL esuata...Incercam sa ne reconectam...')
+        time.sleep(1)
 topic_perioada = 'nodemcu/perioada'
 topic_prag_inferior = 'nodemcu/prag/inferior'
 topic_prag_superior = 'nodemcu/prag/superior'
@@ -44,8 +49,9 @@ def on_disconnect(client, userdata, rc):
     if rc == 0:
         print('Clientul s-a deconectat... Totul este bine.')
     else:
+        print('Clientul s-a deconectat cu codul ',rc,' incercam sa ne reonectam...')
+        client.connected_flag = False
         if rc < 7:
-            client.connected_flag = False
             client.loop_stop()
             print('Clientul s-a deconectat cu codul ',rc,' ... Este o eroare grava ...')
             exit(-3)
@@ -53,6 +59,9 @@ def on_disconnect(client, userdata, rc):
             print('Clientul s-a deconectat cu codul: ', rc,' ... Incercam reconectarea...')
 def on_publish(client, userdata, result):
     print('Mesajul a fost trimis cu codul ', result)
+def on_log(client, userdata, level, buff):
+    #print(buff)
+    pass
 
 client = mqtt.Client(client_id, clean_session)
 client.bad_connection_flag = False #setam steagurile pentru client
@@ -60,6 +69,7 @@ client.connected_flag = False
 client.on_connect = on_connect #adaugam callback-ul
 client.on_disconnect = on_disconnect
 client.on_publish = on_publish
+client.on_log = on_log
 try:
     client.connect(host=host, port=port_insecure, keepalive=60, bind_address="") #omitem exceptiile
 except:
@@ -143,7 +153,9 @@ while not client.bad_connection_flag:
                 my_cursor = mydb.cursor()
                 print('Reconectare reusita!!! Daca nu sunt in continuare accesibile tabelele, atunci acestea nu au fost create corect!!!')
             except:
-                print('Reconectare esuata...')
+                print('Reconectare esuata la serverul MySQL...')
+    else:
+        print('Mai incercam conectarea la serverul MQTT...')
     time.sleep(perioada/1000) #perioada este aceeasi ca pentru achizitia temperaturii
 client.loop_stop() #oprim bucla
 my_cursor.close() #nu mai folosim cursorul

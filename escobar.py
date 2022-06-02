@@ -25,7 +25,7 @@ while not conexiune_my_sql:
         conexiune_my_sql = True
         print('Conexiunea cu baza de date reusita!')
     except:
-        print('Reconectare esuata...')
+        print('Conectarea cu bazele de date esuata...Incercam reconectarea')
         time.sleep(1)
 #numele canalelor:
 topic_1wire = 'temperaturi/1wire'
@@ -63,8 +63,8 @@ def on_disconnect(client, userdata, rc):
         print('Clientul s-a deconectat...Totul este bine.')
     else:
         print('Clientul s-a deconectat cu codul: ', rc,' ... Incercam reconectarea...')
+        client.connected_flag = False
         if rc < 7:
-            client.connected_flag = False
             client.loop_stop()
             print('Clientul s-a deconectat cu codul: ',rc,' ... Este o eroare grava ...')
             exit(-4)
@@ -84,6 +84,9 @@ def on_message(client, userdata, message):
         q3.put(payload)
     if message.retain == 1:
         print("Mesajul acesta a fost emis cat timp clientul era deconectat...")
+def on_log(client, userdata, level, buff):
+    #print(buff)
+    pass
 
 client = mqtt.Client(cliend_id,clean_session)
 client.bad_connection_flag = False #flag pentru conexiune deficitara
@@ -92,6 +95,7 @@ client.on_connect = on_connect
 client.on_disconnect = on_disconnect
 client.on_subscribe = on_subscribe
 client.on_message = on_message
+client.on_log = on_log
 try:
     client.connect(host=host, port=port_insecure, keepalive=60, bind_address='')
 except:
@@ -105,36 +109,39 @@ if client.bad_connection_flag:
     client.loop_stop()
     exit(-2)
 while not client.bad_connection_flag:
-    print('q1 are dimensiunea: ',q1.qsize(),' si q2: ',q2.qsize())
-    while not q1.empty() and not q2.empty() and not q3.empty():
-        (t1,t2,t3) = (q1.get(),q2.get(),q3.get()) # indiferent de succesul operatiunilor, vom muta in permanenta elementele din cozi - sunt de timp real
-        try:
-            params = [buffer_size]
-            cursorul_meu.callproc('adaugare',params) #presupunem ca inseram parametri corecti
+    if client.connected_flag:
+        print('q1 are dimensiunea: ',q1.qsize(),' si q2: ',q2.qsize())
+        while not q1.empty() and not q2.empty() and not q3.empty():
+            (t1,t2,t3) = (q1.get(),q2.get(),q3.get()) # indiferent de succesul operatiunilor, vom muta in permanenta elementele din cozi - sunt de timp real
             try:
-                cursorul_meu.execute('insert into temperaturi(nume_camera, temperatura_wifith1, temperatura_wifith2, temperatura_1wire) \
-                values(\'albastra\',%s, %s, %s)',(t1,t2,t3))
-            except:
-                print('Insertie defectuaosa, deci sunt parametri gresiti...')
+                params = [buffer_size]
+                cursorul_meu.callproc('adaugare',params) #presupunem ca inseram parametri corecti
+                try:
+                    cursorul_meu.execute('insert into temperaturi(nume_camera, temperatura_wifith1, temperatura_wifith2, temperatura_1wire) \
+                    values(\'albastra\',%s, %s, %s)',(t1,t2,t3))
+                except:
+                    print('Insertie defectuaosa, deci sunt parametri gresiti...')
+                    time.sleep(1)
+                    break 
+                db.commit()
+            except Exception as e:
+                print('Nu exista inca baza de date!!!')
+                print('Mesajul de eorare: ', e)
                 time.sleep(1)
-                break 
-            db.commit()
-        except Exception as e:
-            print('Nu exista inca baza de date!!!')
-            print('Mesajul de eorare: ', e)
-            time.sleep(1)
-            try:
-                db = conexiune.connect(
-                    host = '101.232.174.243',
-                    user = 'root',
-                    passwd = 'prikoke',
-                    database = 'bazaDeDate'
-                )
-                cursorul_meu = db.cursor()
-                print('Reconectare reusita!!! Daca in continuare nu sunt disponibile tabelele inseamna ca nu sunt create corect!!!')
-            except:
-                print('Reconectare esuata...')
-                break
+                try:
+                    db = conexiune.connect(
+                        host = '101.232.174.243',
+                        user = 'root',
+                        passwd = 'prikoke',
+                        database = 'bazaDeDate'
+                    )
+                    cursorul_meu = db.cursor()
+                    print('Reconectare reusita!!! Daca in continuare nu sunt disponibile tabelele inseamna ca nu sunt create corect!!!')
+                except:
+                    print('Reconectarea la baza de date esuata...')
+                    break
+    else:
+        print('Mai incercam reconectarea la serverul MQTT...')
     time.sleep(1) #perioada este diferita de cea pentru achizitia unei temepraturi
 cursorul_meu.close()
 client.loop_stop()
