@@ -12,7 +12,7 @@ create table camere (
 DELIMITER $$
 CREATE TRIGGER prag_inferior_update BEFORE UPDATE ON camere FOR EACH ROW
 BEGIN
-	if old.prag_superior < new.prag_inferior then -- noul prag inferior nu trebuie sa fie mai mare decat vechiul prag inferior
+	if old.prag_superior <= new.prag_inferior then -- noul prag inferior nu trebuie sa fie mai mare decat vechiul prag inferior
 		set new.prag_inferior = old.prag_inferior;
 	end if;
 END$$    
@@ -20,7 +20,7 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER prag_inferior_insert BEFORE insert ON camere FOR EACH ROW
 BEGIN
-	if new.prag_superior < new.prag_inferior then -- noul prag inferior nu trebuie sa fie mai mare decat pragul inferior
+	if new.prag_superior <= new.prag_inferior then -- noul prag inferior nu trebuie sa fie mai mare decat pragul inferior
 		set new.prag_inferior = new.prag_superior - new.diferenta; -- consideram situatia extrema
 	end if;
 END$$    
@@ -29,7 +29,7 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER prag_superior_update BEFORE UPDATE ON camere FOR EACH ROW
 BEGIN
-	if old.prag_inferior > new.prag_superior then -- pragul superior nu trebuie sa fie mai mic decat vechiul prag inferior
+	if old.prag_inferior >= new.prag_superior then -- pragul superior nu trebuie sa fie mai mic decat vechiul prag inferior
 		set new.prag_superior = old.prag_superior;
 	end if;
 END$$    
@@ -37,7 +37,7 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER prag_superior_insert BEFORE insert ON camere FOR EACH ROW
 BEGIN
-	if new.prag_superior < new.prag_inferior then -- pragl superior nu trebuie sa fie mai mic decat pragul inferior
+	if new.prag_superior <= new.prag_inferior then -- pragl superior nu trebuie sa fie mai mic decat pragul inferior
 		set new.prag_superior = new.prag_inferior + new.diferenta; -- consideram situatia extrema
 	end if;
 END$$    
@@ -88,14 +88,14 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER trigger_medie_insertie BEFORE insert ON temperaturi FOR EACH ROW
 BEGIN
-	if abs(new.temperatura_wifith1 - new.temperatura_wifith2) > abs(new.temperatura_wifith1 - new.temperatura_1wire) then
-		if abs(new.temperatura_wifith1 - new.temperatura_1wire) > abs(new.temperatura_wifith2 - new.temperatura_1wire) then
+	if abs(new.temperatura_wifith1 - new.temperatura_wifith2) >= abs(new.temperatura_wifith1 - new.temperatura_1wire) then
+		if abs(new.temperatura_wifith1 - new.temperatura_1wire) >= abs(new.temperatura_wifith2 - new.temperatura_1wire) then
 			set new.temperatura_medie = (new.temperatura_wifith2 + new.temperatura_1wire)/2;
 		else
 			set new.temperatura_medie = (new.temperatura_wifith1 + new.temperatura_1wire)/2;
 		end if;
 	else
-		if abs(new.temperatura_wifith1 - new.temperatura_wifith2) > abs(new.temperatura_wifith2 - new.temperatura_1wire) then
+		if abs(new.temperatura_wifith1 - new.temperatura_wifith2) >= abs(new.temperatura_wifith2 - new.temperatura_1wire) then
 			set new.temperatura_medie = (new.temperatura_wifith2 + new.temperatura_1wire)/2;
 		else
 			set new.temperatura_medie = (new.temperatura_wifith1 + new.temperatura_wifith2)/2;
