@@ -3,6 +3,14 @@ import time
 import mysql.connector as conexiune
 from queue import Queue
 
+def esteNumar(numar):
+    try:
+        x = float(numar)
+        print(x)
+        return True
+    except:
+        print('Nu este un numar!')
+        return False
 q1 = Queue() #contine datele primite de la wifi1
 q2 = Queue() #contine datele primite de la wifi2
 q3 = Queue() #contine datele primite de la 1-wire
@@ -74,14 +82,20 @@ def on_subscribe(client, userdata, mid, granted_qos):
 def on_message(client, userdata, message):
     payload = str(message.payload.decode("utf-8"))
     if message.topic == topic_wifi_senzor1:
-        print('De la wifi1 avem: ',payload)
-        q1.put(payload)
+        if esteNumar(payload):
+            q1.put(payload)
+        else:
+            print('De la wifi1 avem: ',payload)
     elif message.topic == topic_wifi_senzor2:
-        print('De la wifi2 avem: ',payload)
-        q2.put(payload)
+        if esteNumar(payload):
+            q2.put(payload)
+        else:
+            print('De la wifi2 avem: ',payload)
     elif message.topic == topic_1wire:
-        print('De la 1-wire avem: ', payload)
-        q3.put(payload)
+        if esteNumar(payload):
+            q3.put(payload)
+        else:
+            print('De la 1-wire avem: ', payload)
     if message.retain == 1:
         print("Mesajul acesta a fost emis cat timp clientul era deconectat...")
 def on_log(client, userdata, level, buff):

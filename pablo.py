@@ -8,7 +8,7 @@ host = '101.232.174.243' #ip server
 qos = 2 #folosim calitatea maxima astfel incat sa nu avem probleme cu deconectarea
 clean_session = False #vom stoca informatiile netrimise
 retain = True #vom stoca ultimul mesaj
-my_sql_conexiune = False;
+my_sql_conexiune = False #flag pentru testarea conexiunii cu mariaDB
 while not my_sql_conexiune:
     try:
         mydb = mysql.connector.connect( #ne conectam la baza de date
