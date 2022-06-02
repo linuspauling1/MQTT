@@ -141,7 +141,7 @@ while not client.bad_connection_flag:
                     database = 'bazaDeDate'
                 )
                 my_cursor = mydb.cursor()
-                print('Reconectare reusita!!!')
+                print('Reconectare reusita!!! Daca nu sunt in continuare accesibile tabelele, atunci acestea nu au fost create corect!!!')
             except:
                 print('Reconectare esuata...')
     time.sleep(perioada/1000) #perioada este aceeasi ca pentru achizitia temperaturii

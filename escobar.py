@@ -15,7 +15,7 @@ buffer_size = 100 #dimensiunea circular buffer-ului MySQL
 conexiune_my_sql = False#stabilim o conexiune cu baza de date mysql
 while not conexiune_my_sql:
     try:
-        db = mysql.connector.connect(
+        db = conexiune.connect(
             host = '101.232.174.243',
             user = 'root',
             passwd = 'prikoke',
@@ -124,13 +124,14 @@ while not client.bad_connection_flag:
             print('Mesajul de eorare: ', e)
             time.sleep(1)
             try:
-                db = mysql.connector.connect(
+                db = conexiune.connect(
                     host = '101.232.174.243',
                     user = 'root',
                     passwd = 'prikoke',
                     database = 'bazaDeDate'
                 )
                 cursorul_meu = db.cursor()
+                print('Reconectare reusita!!! Daca in continuare nu sunt disponibile tabelele inseamna ca nu sunt create corect!!!')
             except:
                 print('Reconectare esuata...')
                 break
