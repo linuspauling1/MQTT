@@ -5,6 +5,7 @@ import os
 from stat import *
 import paho.mqtt.client as mqtt
 
+#path = 'home/paul/sys/bus/w1/devices/' #calea absoluta pentru testele din vm
 path = '/sys/bus/w1/devices/' #calea absoluta
 senzori = [] #trebuie ca senzorii sa fie deja conectati pentru ca aplicatia sa porneasca...
 client_id = '1wire' #numele clientului care sade aici, pe rpi
