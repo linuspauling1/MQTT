@@ -322,8 +322,8 @@ void actuatori() {
 }
 
 void loop() {
-  //multiplexare();//o apelam pentru prima placa
-  senzori_dht();//o apelam pentru a doua placa
+  multiplexare();//o apelam pentru prima placa
+  //senzori_dht();//o apelam pentru a doua placa
   bool bucla = true;
   cur = millis();
   //verificam conexiunea
