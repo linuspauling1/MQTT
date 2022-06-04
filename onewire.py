@@ -4,8 +4,9 @@ import time
 import os
 from stat import *
 import paho.mqtt.client as mqtt
+import re
 
-#path = 'home/paul/sys/bus/w1/devices/' #calea absoluta pentru testele din vm
+#path = '/sys/bus/w1/devices/' #calea absoluta pentru testele din vm
 path = '/sys/bus/w1/devices/' #calea absoluta
 senzori = [] #trebuie ca senzorii sa fie deja conectati pentru ca aplicatia sa porneasca...
 client_id = '1wire' #numele clientului care sade aici, pe rpi
@@ -16,7 +17,7 @@ clean_session = False #vom stoca informatiile netrimise
 retain = True #vom stoca ultimul mesaj
 topic1 = 'nodemcu/1wire' #canalul pe care trimitem date
 ante_th1 = 0 #o valoare momentan irelevanta pentru temperatura precedenta
-topic2 = 'nodemcu/1wire' #canalul pe care trimitem date
+topic2 = 'nodemcu2/1wire' #canalul pe care trimitem date
 ante_th2 = 0 #o valoare momentan irelevanta pentru temperatura precedenta
 topic_will = 'temperaturi/1wire' #canalul pe care trimitem "the last will message"
 
@@ -35,7 +36,8 @@ def start():
 						else:
 							print('Directorul pentru senzori nu contine fisierul necesar...')
 					except:
-						print('Directorul nu contine fisierul w1_slave, desi nu ar fi trebuit...')
+						if not re.search('bus_master',cale):
+							print('In directorul acesta nu am gasit informatiile necesare! E grav!')
 				else:
 					print('Directorul contine ceva neasteptat...')
 		else:
