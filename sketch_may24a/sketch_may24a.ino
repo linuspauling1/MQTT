@@ -53,12 +53,13 @@ inline void mesaj_eroare() {
 
 bool isNo(char* payload)//identificare numere
 {
-	int i, count = 0;
+	int i, count = 0, count_neg = 0;
 	bool digit = true;
 	for(i = 0;payload[i] != 0;++i) {
 		if(payload[i] == '.')
 			++count;
-		if(payload[i] != '.' && (payload[i] > '9' || payload[i] < '0' || count > 1)) {
+    if(payload[i] == '-')
+		if(payload[i] != '.' && payload[i] != '-' && (payload[i] > '9' || payload[i] < '0' || count > 1 || count_neg > 1)) {
 			digit = false;
 			break;
 		}
@@ -147,8 +148,14 @@ void senzori_dht() { //ar fi bine ca achizitia de date sa se faca la cel putin 2
     Serial.print(humidity2);
     Serial.print(" Temperatura DHT2: ");
     Serial.println(temperature2);
-    wifi1 = temperature1;
-    wifi2 = temperature2;
+    if(!isnan(temperature1))    
+      wifi1 = temperature1;
+    else
+      wifi1 = -99.9;
+    if(!isnan(temperature2))
+      wifi2 = temperature2;
+    else
+      wifi2 = -99.9;
   }
 }
 
@@ -176,16 +183,19 @@ void multiplexare() {
 void achizitie() {
   if(abs(wifi1) >= 100.0){
       Serial.print("Valoarea este inadmisibil de mare in modul.\n");
+      strcpy(temperatura_wifi1_string,"-99.9");
   } else {
       dtostrf(wifi1,2,1,(char*)temperatura_wifi1_string);
   }
   if(abs(wifi2) >= 100.0){
       Serial.print("Valoarea este inadmisibil de mare in modul.\n");
+      strcpy(temperatura_wifi2_string,"-99.9");
   } else {
       dtostrf(wifi2,2,1,(char*)temperatura_wifi2_string);
   }
   if(abs(temperatura_1wire) >= 100.0){
       Serial.print("Valoarea este inadmisibil de mare in modul.\n");
+      strcpy(temperatura_1wire_string,"-99.9");
   } else {
       dtostrf(temperatura_1wire,2,1,(char*)temperatura_1wire_string);
   }
