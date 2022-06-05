@@ -16,57 +16,36 @@ qos = 2 #folosim calitatea maxima astfel incat sa nu avem probleme cu deconectar
 clean_session = False #vom stoca informatiile netrimise
 retain = True #vom stoca ultimul mesaj
 topic1 = 'nodemcu/1wire' #canalul pe care trimitem date
-ante_th1 = 0 #o valoare momentan irelevanta pentru temperatura precedenta
 topic2 = 'nodemcu2/1wire' #canalul pe care trimitem date
-ante_th2 = 0 #o valoare momentan irelevanta pentru temperatura precedenta
 topic_will = 'temperaturi/1wire' #canalul pe care trimitem "the last will message"
+path1 = '/sys/bus/w1/devices/28-0417a20db2ff/w1_slave'
+path2 = '/sys/bus/w1/devices/28-0417a20db2ff/w1_slave'
 
-def start():
-	try:
-		status_director = os.stat(path)
-		if S_ISDIR(status_director.st_mode):
-			for file in os.listdir(path):
-				status_file = os.stat(path + '/' + file)
-				if S_ISDIR(status_file.st_mode):
-					cale = path + '/'+ file + '/w1_slave'
-					try:
-						status = os.stat(cale)
-						if S_ISREG(status.st_mode):
-							senzori.append(cale)
-						else:
-							print('Directorul pentru senzori nu contine fisierul necesar...')
-					except:
-						if not re.search('bus_master',cale):
-							print('In directorul acesta nu am gasit informatiile necesare! E grav!')
-				else:
-					print('Directorul contine ceva neasteptat...')
-		else:
-			print('Fisierul nu este director, desi ar fi trebuit sa fie...')
-	except Exception as exceptie:
-		print('Nu exista fisierul ',path,'...')
-		print(exceptie)
-		exit(-1)
 def citire():
 	global valoare1, valoare2
-	try:
-		if len(senzori) == 0:
-			print('Momentan senzorii lipsesc...')
-			time.sleep(1) #asteptam 1 secunda
-			valoare1 = ante_th1 #nu dorim ca valorile sa se schimbe
-			valoare2 = ante_th2
-		if len(senzori) > 0 :
-			with open(senzori[0], 'r') as f:
-			    continut = f.readlines()[1]
-			    temperatura = continut.split()[-1]
-			    valoare1 = float(int(temperatura[2:])//100)/10
-			valoare2 = ante_th2 #nici aici nu vrem ca valorile sa se schimbe
-		if len(senzori) > 1:
-			with open(senzori[1], 'r') as f:
-			    continut = f.readlines()[1]
-			    temperatura = continut.split()[-1]
-			    valoare2 = float(int(temperatura[2:])//100)/10
-	except Exception as e:
-		print(e)
+	if os.path.exists(path1):
+		try:
+			with open(path1,'r') as f1:
+				continut = f1.readlines()[1]
+				temperatura = continut.split()[-1]
+				valoare1 = float(int(temperatura[2:])//100)/10
+		except Exception as e1:
+			print(e1)
+	else:
+		valoare1 = -99.9
+		print('Nu putem citi senzorul de la gpio4!')
+	if os.path.exists(path2):
+		try:
+			with open(path2,'r') as f2:
+				continut = f2.readlines()[1]
+				temperatura = continut.split()[-1]
+				valoare2 = float(int(temperatura[2:])//100)/10
+		except Exception as e2:
+			valoare2 = -99.9
+			print(e2)
+	else:
+		valoare2 = -99.9
+		print('Nu putem citi senorul de la gpio17!')
 #partea de mqtt:
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -110,16 +89,13 @@ while not client.bad_connection_flag and not client.connected_flag: #cat timp nu
 if client.bad_connection_flag:
     client.loop_stop() #incheiem bucla de procesare a evenimentelor
     exit(-2) #iesim fortat
-start() #ar trebui ca aici senzorii sa fie deja conectati, altfel nu va porni procesul
 while not client.bad_connection_flag:
     if client.connected_flag:
-    	citire()
-    	if ante_th1 != valoare1:
-    		client.publish(topic1, valoare1, qos, retain)
-    		ante_th1 = valoare1
-    	if ante_th2 != valoare2:
-    		client.publish(topic2, valoare2, qos, retain)
-    		ante_th2 = valoare2
+        citire()
+        client.publish(topic1, valoare1, qos, retain)
+        print(valoare1)
+        client.publish(topic2, valoare2, qos, retain)
+        print(valoare2)
     else:
         print('Incercam reconectarea...')
     time.sleep(1) #achizitionam date la fiecare secunda (senzorul oricum are intertie termica mare)
