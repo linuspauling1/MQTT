@@ -72,23 +72,34 @@ while not my_sql_conexiune:
     except:
         print('Conectarea la serverul MySQL esuata...Incercam sa ne reconectam...')
         time.sleep(1)
+ora_a = '0'
+ora_p = '0'
 ora_anterioara_a = '0' #ora este fictiva
 ora_anterioara_p = '0' #este necesar ca mesageria sa fie activata
 while True:
 	try:
 		#pentru camera albastra:
-		cursorul_meu.execute('select prag_inferior, prag_superior, diferenta, numar_telefon from camere where nume_camera = \'albastra\'')
-		prag_inferior_a, prag_superior_a, diferenta_a, numar_telefon_a = cursorul_meu.fetchall()[0]
-		cursorul_meu.execute('select temperatura_medie, diferenta, ora from temperaturi where nume_camera = \'albastra\' limit 1')
-		temperatura_medie_a, diferenta_maxima_a, ora_a = cursorul_meu.fetchall()[0]
+		try:
+			cursorul_meu.execute('select prag_inferior, prag_superior, diferenta, numar_telefon from camere where nume_camera = \'albastra\'')
+			prag_inferior_a, prag_superior_a, diferenta_a, numar_telefon_a = cursorul_meu.fetchall()[0]
+			cursorul_meu.execute('select temperatura_medie, diferenta, ora from temperaturi where nume_camera = \'albastra\' limit 1')
+			temperatura_medie_a, diferenta_maxima_a, ora_a = cursorul_meu.fetchall()[0]
+		except:
+			print('Nu avem populata baza de date a camerei albastre.')
 		#pentru camera portocalie:
-		cursorul_meu.execute('select prag_inferior, prag_superior, diferenta, numar_telefon from camere where nume_camera = \'portocalie\'')
-		prag_inferior_p, prag_superior_p, diferenta_p, numar_telefon_p = cursorul_meu.fetchall()[0]
-		cursorul_meu.execute('select temperatura_medie, diferenta, ora from temperaturi where nume_camera = \'portocalie\' limit 1')
-		temperatura_medie_p, diferenta_maxima_p, ora_p = cursorul_meu.fetchall()[0]
+		try:
+			cursorul_meu.execute('select prag_inferior, prag_superior, diferenta, numar_telefon from camere where nume_camera = \'portocalie\'')
+			prag_inferior_p, prag_superior_p, diferenta_p, numar_telefon_p = cursorul_meu.fetchall()[0]
+			cursorul_meu.execute('select temperatura_medie, diferenta, ora from temperaturi where nume_camera = \'portocalie\' limit 1')
+			temperatura_medie_p, diferenta_maxima_p, ora_p = cursorul_meu.fetchall()[0]
+		except:
+			print('Nu avem populata baza de date a camerei portocalii.')
 		#pentru administrator:
-		cursorul_meu.execute('select numar_telefon from administrator')
-		numar_telefon_admin, = cursorul_meu.fetchall()[0]
+		try:
+				cursorul_meu.execute('select numar_telefon from administrator')
+				numar_telefon_admin, = cursorul_meu.fetchall()[0]
+		except:
+			print('Nu avem populata baza de date a administratorului.')
 		if ora_a != ora_anterioara_a:
 			print('albastra')
 			ora_anterioara_a = ora_a
@@ -127,6 +138,5 @@ while True:
 			print('Reconectare reusita!!! Daca in continuare nu sunt disponibile tabelele inseamna ca nu sunt create corect!!!')
 		except:
 			print('Reconectarea la baza de date esuata...')
-			break
 	#intarziere:
 	time.sleep(1)
