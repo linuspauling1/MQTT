@@ -59,7 +59,8 @@ bool isNo(char* payload)//identificare numere
 		if(payload[i] == '.')
 			++count;
     if(payload[i] == '-')
-		if(payload[i] != '.' && payload[i] != '-' && (payload[i] > '9' || payload[i] < '0' || count > 1 || count_neg > 1)) {
+      ++count_neg;
+		if((payload[i] != '.' && payload[i] != '-' && payload[i] > '9' && payload[i] < '0') || count > 1 || count_neg > 1) {
 			digit = false;
 			break;
 		}
