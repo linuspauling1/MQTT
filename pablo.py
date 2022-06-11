@@ -22,10 +22,10 @@ while not my_sql_conexiune:
     except:
         print('Conectarea la serverul MySQL esuata...Incercam sa ne reconectam...')
         time.sleep(1)
-topic_perioada = 'nodemcu/perioada'
-topic_prag_inferior = 'nodemcu/prag/inferior'
-topic_prag_superior = 'nodemcu/prag/superior'
-topic_diferenta = 'nodemcu/diferenta'
+topic_perioada = 'nodemcu1/perioada'
+topic_prag_inferior = 'nodemcu1/prag/inferior'
+topic_prag_superior = 'nodemcu1/prag/superior'
+topic_diferenta = 'nodemcu1/diferenta'
 
 perioada=1.0 #valorile curente
 temperatura_medie=11.1 #sunt irelevante intrucat vor fi citite din baza de date

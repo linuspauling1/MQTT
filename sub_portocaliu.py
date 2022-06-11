@@ -38,9 +38,9 @@ while not conexiune_my_sql:
         time.sleep(1)
 #numele canalelor:
 topic_1wire = 'temperaturi2/1wire'
-topic_wifi_senzor1 = 'temperaturi2/wifi/senzor1'
-topic_wifi_senzor2 = 'temperaturi2/wifi/senzor2'
-topic_wifi = 'temperaturi2/wifi/#'
+topic_wifi_senzor1 = 'temperaturi2/senzori/senzor1'
+topic_wifi_senzor2 = 'temperaturi2/senzori/senzor2'
+topic_wifi = 'temperaturi2/senzori/#'
 #callbacks:
 def on_connect(client, userdata, flags, rc):
     if rc == 0:

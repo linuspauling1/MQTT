@@ -37,10 +37,10 @@ while not conexiune_my_sql:
         print('Conectarea cu bazele de date esuata...Incercam reconectarea')
         time.sleep(1)
 #numele canalelor:
-topic_1wire = 'temperaturi/1wire'
-topic_wifi_senzor1 = 'temperaturi/wifi/senzor1'
-topic_wifi_senzor2 = 'temperaturi/wifi/senzor2'
-topic_wifi = 'temperaturi/wifi/#'
+topic_1wire = 'temperaturi1/1wire'
+topic_wifi_senzor1 = 'temperaturi1/senzori/senzor1'
+topic_wifi_senzor2 = 'temperaturi1/senzori/senzor2'
+topic_wifi = 'temperaturi1/senzori/#'
 #callbacks:
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
