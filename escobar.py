@@ -20,6 +20,7 @@ host = '101.232.174.243'
 port_insecure = 1883 #portul securizat fiind 8883
 qos = 2 #calitatea maxima
 buffer_size = 100 #dimensiunea circular buffer-ului MySQL
+nume_camera = 'albastra' #numele camerei este 'albastra'
 conexiune_my_sql = False#stabilim o conexiune cu baza de date mysql
 while not conexiune_my_sql:
     try:
@@ -128,7 +129,7 @@ while not client.bad_connection_flag:
         while not q1.empty() and not q2.empty() and not q3.empty():
             (t1,t2,t3) = (q1.get(),q2.get(),q3.get()) # indiferent de succesul operatiunilor, vom muta in permanenta elementele din cozi - sunt de timp real
             try:
-                params = [buffer_size]
+                params = [buffer_size, nume_camera]
                 cursorul_meu.callproc('adaugare',params) #presupunem ca inseram parametri corecti
                 try:
                     cursorul_meu.execute('insert into temperaturi(nume_camera, temperatura_wifith1, temperatura_wifith2, temperatura_1wire) \

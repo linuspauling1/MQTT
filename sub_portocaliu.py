@@ -20,6 +20,7 @@ host = '101.232.174.243'
 port_insecure = 1883 #portul securizat fiind 8883
 qos = 2 #calitatea maxima
 buffer_size = 100 #dimensiunea circular buffer-ului MySQL
+nume_camera = 'portocalie' #numele camerei este 'portocalie'
 conexiune_my_sql = False#stabilim o conexiune cu baza de date mysql
 while not conexiune_my_sql:
     try:
@@ -40,7 +41,6 @@ topic_1wire = 'temperaturi2/1wire'
 topic_wifi_senzor1 = 'temperaturi2/wifi/senzor1'
 topic_wifi_senzor2 = 'temperaturi2/wifi/senzor2'
 topic_wifi = 'temperaturi2/wifi/#'
-topic_1wire_will = 'temperaturi/1wire'
 #callbacks:
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -61,15 +61,6 @@ def on_connect(client, userdata, flags, rc):
                 print('... ... ...')
                 (result_1wire, mid_1wire) = client.subscribe(topic_1wire, qos)
             print('Am reusit abaonarea la canlul pentru senzorul 1-wire cu identificatorul de mesaj: ', mid)
-        except:
-            print('Nu am putut sa ne abonam la canalul cu datele primite de la senzorul 1wire...')
-            exit(-3)
-        try: #incercam sa ne abonam la canalul pentru anuntul deconectarii senzorului 1-wire
-            (result_will, mid_will) = client.subscribe(topic_1wire_will, qos)
-            while result_will != 0:
-                print('... ... ...')
-                (result_will, mid_will) = client.subscribe(topic_1wire_will, qos)
-            print('Am reusit abaonarea la canlul pentru anuntul deconectarii senzorului 1-wire cu identificatorul de mesaj: ', mid)
         except:
             print('Nu am putut sa ne abonam la canalul cu datele primite de la senzorul 1wire...')
             exit(-3)
@@ -106,8 +97,6 @@ def on_message(client, userdata, message):
             q3.put(payload)
         else:
             print('De la 1-wire avem: ', payload)
-    elif message.topic == topic_1wire_will:
-        print(payload)
     if message.retain == 1:
         print("Mesajul acesta a fost emis cat timp clientul era deconectat...")
 def on_log(client, userdata, level, buff):
@@ -136,11 +125,11 @@ if client.bad_connection_flag:
     exit(-2)
 while not client.bad_connection_flag:
     if client.connected_flag:
-        print('q1 are dimensiunea: ',q1.qsize(),' si q2: ',q2.qsize())
+        print('q1 are dimensiunea: ',q1.qsize(),' si q2: ',q2.qsize(), ', iar q3: ',q3.qsize())
         while not q1.empty() and not q2.empty() and not q3.empty():
             (t1,t2,t3) = (q1.get(),q2.get(),q3.get()) # indiferent de succesul operatiunilor, vom muta in permanenta elementele din cozi - sunt de timp real
             try:
-                params = [buffer_size]
+                params = [buffer_size,nume_camera]
                 cursorul_meu.callproc('adaugare',params) #presupunem ca inseram parametri corecti
                 try:
                     cursorul_meu.execute('insert into temperaturi(nume_camera, temperatura_wifith1, temperatura_wifith2, temperatura_1wire) \

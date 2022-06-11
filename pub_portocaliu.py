@@ -156,7 +156,7 @@ while not client.bad_connection_flag:
                 print('Reconectare esuata la serverul MySQL...')
     else:
         print('Mai incercam conectarea la serverul MQTT...')
-    time.sleep(perioada/1000) #perioada este aceeasi ca pentru achizitia temperaturii
+    time.sleep(1) #perioada NU este aceeasi ca pentru achizitia temperaturii
 client.loop_stop() #oprim bucla
 my_cursor.close() #nu mai folosim cursorul
 client.disconnect() #ne deconectam
