@@ -5,7 +5,7 @@ import mysql.connector
 def trimite_mesajul(textMesaj,nr_telefon):
 	global seriala
 	ctrlZ = chr(26) #caracter pentru terminarea mesajului
-	nr_ro = '+4' + nr_telefon #numarul pentru romania
+	nr_ro = nr_telefon #numarul pentru romania
 	trimis = False
 	while not trimis:
 		try:
