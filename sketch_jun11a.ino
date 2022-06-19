@@ -188,14 +188,14 @@ void multiplexare() {//mereu vom primi valori care sunt numere, nu e cazul de te
   int now = millis();
   if(now - timp > perioada/2 && !flag){
     analogValue = analogRead(A0);
-    wifi1 = analogValue/10.0;
+    wifi1 = analogValue*80.0/890.0 - 40.0;//translatie
     digitalWrite(termistor1,HIGH);
     digitalWrite(termistor2,LOW);
     flag = true;
   }
   if(now - timp > perioada){
     analogValue = analogRead(A0);
-    wifi2 = analogValue/10.0;
+    wifi2 = analogValue*80.0/890.0 - 40.0;//translatie
     digitalWrite(termistor2,HIGH);
     digitalWrite(termistor1,LOW);
     flag = false;
@@ -336,22 +336,27 @@ void actuatori() {
   //actuator cu histerezis pentru camera frigorifica (reactioneaza la temperaturi inadmisibil de mari)
   static bool racitor = false;
   float histerezis_cald_inferior = (prag_superior - prag_inferior)/2.f;
-  float histerezis_cald_superior = (prag_superior - prag_inferior)/2.f;
+  float histerezis_cald_superior = (prag_superior - prag_inferior)/2.0;
   if(!histerezis_cald_inferior || !histerezis_cald_superior)
     histerezis_cald_inferior = histerezis_cald_superior = 100.f;//altfel se declanseaza la pornire
   int dc;
+  static int dc_anterior = -1;//pentru declansarea initiala
   if(temperatura_medie > prag_superior + histerezis_cald_superior)
     racitor = true;
   if((temperatura_medie < prag_superior - histerezis_cald_inferior) && racitor)
     racitor = false;
   if(racitor){
-    dc = (int)((prag_superior + histerezis_cald_superior - temperatura_1wire)/(histerezis_cald_inferior + histerezis_cald_superior)*1023.0);
+    dc = (int)((prag_superior + histerezis_cald_superior - temperatura_medie)/(histerezis_cald_inferior + histerezis_cald_superior)*1023.0);
+    //Serial.println(dc);
     if(temperatura_medie > prag_superior + histerezis_cald_superior)
       dc = 0;
     dc = 1023 - dc;
     Serial.print("Factor de umplere (de la 0 la 1023): ");
     Serial.println(dc);
-    analogWrite(pwm,dc);
+    if(dc != dc_anterior){
+      dc_anterior = dc;
+      analogWrite(pwm,dc);
+    }
   } else{
     analogWrite(pwm,0);
   }
