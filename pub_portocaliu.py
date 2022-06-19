@@ -4,7 +4,7 @@ import time
 
 client_id = 'rpi_pub_portocaliu' #numele clientului care sade aici, pe rpi
 port_insecure = 1883 #portul nesecurizat pentru mqtt
-host = '101.232.174.243' #ip server
+host = '101.232.172.13' #ip server
 qos = 2 #folosim calitatea maxima astfel incat sa nu avem probleme cu deconectarea
 clean_session = False #vom stoca informatiile netrimise
 retain = True #vom stoca ultimul mesaj
@@ -145,7 +145,7 @@ while not client.bad_connection_flag:
             time.sleep(1)
             try:
                 mydb = mysql.connector.connect(
-                    host = '101.232.174.243',
+                    host = host,
                     user = 'root',
                     passwd = 'prikoke',
                     database = 'bazaDeDate'

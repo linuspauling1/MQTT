@@ -16,7 +16,7 @@ q2 = Queue() #contine datele primite de la senzor2
 q3 = Queue() #contine datele primite de la 1-wire
 cliend_id = 'rpi2' #un client asemanator cu cel anterior
 clean_session = False #dorim ca mesajele sa fie pastrate pana la reconectare
-host = '101.232.174.243'
+host = '101.232.172.13'
 port_insecure = 1883 #portul securizat fiind 8883
 qos = 2 #calitatea maxima
 buffer_size = 100 #dimensiunea circular buffer-ului MySQL
@@ -25,7 +25,7 @@ conexiune_my_sql = False#stabilim o conexiune cu baza de date mysql
 while not conexiune_my_sql:
     try:
         db = conexiune.connect(
-            host = '101.232.174.243',
+            host = host,
             user = 'root',
             passwd = 'prikoke',
             database = 'bazaDeDate'
@@ -145,7 +145,7 @@ while not client.bad_connection_flag:
                 time.sleep(1)
                 try:
                     db = conexiune.connect(
-                        host = '101.232.174.243',
+                        host = host,
                         user = 'root',
                         passwd = 'prikoke',
                         database = 'bazaDeDate'
