@@ -58,7 +58,7 @@ def conectare_seriala_GSM():
 conectare_seriala_GSM()
 #citirea bazelor de date:
 my_sql_conexiune = False
-host = '101.232.174.243'
+host = '101.232.172.13'
 while not my_sql_conexiune:
     try:
         baza_de_date = mysql.connector.connect( #ne conectam la baza de date
@@ -128,7 +128,7 @@ while True:
 		time.sleep(1)
 		try:
 			db = conexiune.connect(
-				host = '101.232.174.243',
+				host = host,
 				user = 'root',
 				passwd = 'prikoke',
 				database = 'bazaDeDate'
