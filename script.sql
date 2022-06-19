@@ -129,18 +129,18 @@ CREATE TRIGGER trigger_diferenta BEFORE UPDATE ON temperaturi FOR EACH ROW
 BEGIN
 	if(abs(new.temperatura_medie - new.temperatura_wifith1) > abs(new.temperatura_medie - new.temperatura_wifith2)) then
 		if(abs(new.temperatura_medie - new.temperatura_wifith1) > abs(new.temperatura_medie - new.temperatura_1wire)) then
-			set new.diferenta = new.temperatura_medie - new.temperatura_wifith1;
+			set new.diferenta = new.temperatura_wifith1 - new.temperatura_medie;
         else
-			set new.diferenta = new.temperatura_medie - new.temperatura_1wire;
+			set new.diferenta = new.temperatura_1wire - new.temperatura_medie;
         end if;
     else
 		if(abs(new.temperatura_medie - new.temperatura_wifith2) > abs(new.temperatura_medie - new.temperatura_1wire)) then
-			set new.diferenta = new.temperatura_medie - new.temperatura_wifith2;
+			set new.diferenta = new.temperatura_wifith2 - new.temperatura_medie;
         else
-			set new.diferenta = new.temperatura_medie - new.temperatura_1wire;
+			set new.diferenta = new.temperatura_1wire - new.temperatura_medie;
         end if;
     end if;
-END$$    
+END$$     
 DELIMITER ;
 
 DELIMITER $$
