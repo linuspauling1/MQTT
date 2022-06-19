@@ -11,8 +11,8 @@ const int magistralaOneWire = 14;//echivalent cu D5
 OneWire oneWire(magistralaOneWire); 
 DallasTemperature sensors(&oneWire);
 
-char* network_name = "WMKT2";
-char* network_pass = "1324354657687980";
+char* network_name = "TP-Link";
+char* network_pass = "12345678";
 char* clientID = "NodeMCU2";
 char* topic_prag_inferior = "nodemcu2/prag/inferior";//numele topicurilor pe care transmitem catre NodeMCU,
 char* topic_prag_superior = "nodemcu2/prag/superior";//temperaturile prag,
@@ -36,7 +36,14 @@ const int alarma_deficit = D4;//actuator care anunta temperatura prea mica, se a
 const int temperatura1 = D6;//senzor temperatura si umiditate dht
 const int temperatura2 = D7;//alt senzor dht
 const int pwm = D8;//port pwm
-IPAddress ip_server(101,232,174,243);//ip-ul din LAN al raspberry-ului
+//-----conectarea in retea
+IPAddress ip_server(101,232,172,13);//ip-ul din LAN al raspberry-ului
+IPAddress local_IP(101, 232, 172, 12);//ip-ul placii
+IPAddress gateway(101, 232, 172, 1);//gateway
+IPAddress subnet(255, 255, 255, 0);//subnet
+IPAddress primaryDNS(8, 8, 8, 8);//optional
+IPAddress secondaryDNS(8, 8, 8, 8);//optional - google
+//-----senzorii
 DHT dht1 = DHT(temperatura1,senzor_umiditate_temperatura);
 DHT dht2 = DHT(temperatura2,senzor_umiditate_temperatura);
 int analogValue;//o folosim la achizitia de temperatura
@@ -115,6 +122,9 @@ void setup() {
   dht2.begin();//va avea efect pentru placa a doua
   Serial.begin(br);
   Serial.println();//curatam ecranul
+  if(!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
+    Serial.println("Nu ne-am putut conecta in retea...");
+  }
   WiFi.begin(network_name,network_pass);
   Serial.print("\nSe conecteaza...");
   while(!WiFi.isConnected()) { //verificam conexiunea in reteaua locala
