@@ -11,8 +11,8 @@ def esteNumar(numar):
     except:
         print('Nu este un numar!')
         return False
-q1 = Queue() #contine datele primite de la wifi1
-q2 = Queue() #contine datele primite de la wifi2
+q1 = Queue() #contine datele primite de la senzor1
+q2 = Queue() #contine datele primite de la senzor2
 q3 = Queue() #contine datele primite de la 1-wire
 cliend_id = 'rpi2' #un client asemanator cu cel anterior
 clean_session = False #dorim ca mesajele sa fie pastrate pana la reconectare
@@ -38,19 +38,19 @@ while not conexiune_my_sql:
         time.sleep(1)
 #numele canalelor:
 topic_1wire = 'temperaturi1/1wire'
-topic_wifi_senzor1 = 'temperaturi1/senzori/senzor1'
-topic_wifi_senzor2 = 'temperaturi1/senzori/senzor2'
-topic_wifi = 'temperaturi1/senzori/#'
+topic_senzori_senzor1 = 'temperaturi1/senzori/senzor1'
+topic_senzori_senzor2 = 'temperaturi1/senzori/senzor2'
+topic_senzori = 'temperaturi1/senzori/#'
 #callbacks:
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         client.connected_flag = True
         print('M-am conectat.') #daca return code-ul este nul, atunci conexiunea este viabila
-        try: #incercam sa ne abonam la canalele pentru senzorii wifi
-            (result, mid) = client.subscribe(topic_wifi, qos)
+        try: #incercam sa ne abonam la canalele pentru senzorii senzori
+            (result, mid) = client.subscribe(topic_senzori, qos)
             while result != 0: #daca rezultatul este nul atunci conexiunea este slaba si trebuie refacuta
                 print('... ...')
-                (result, mid) = client.subscribe(topic_wifi, qos)
+                (result, mid) = client.subscribe(topic_senzori, qos)
             print('Am reusit abaonarea la canlul cu identificatorul de mesaj: ', mid)
         except: #daca primim o excpetie trebuie sa iesim din program intrucat sunt parametri incorecti
             print('Nu am putut sa ne abonam la canalul cu datele primite de la senzori...')
@@ -82,16 +82,16 @@ def on_subscribe(client, userdata, mid, granted_qos):
     pass
 def on_message(client, userdata, message):
     payload = str(message.payload.decode("utf-8"))
-    if message.topic == topic_wifi_senzor1:
+    if message.topic == topic_senzori_senzor1:
         if esteNumar(payload):
             q1.put(payload)
         else:
-            print('De la wifi1 avem: ',payload)
-    elif message.topic == topic_wifi_senzor2:
+            print('De la senzori1 avem: ',payload)
+    elif message.topic == topic_senzori_senzor2:
         if esteNumar(payload):
             q2.put(payload)
         else:
-            print('De la wifi2 avem: ',payload)
+            print('De la senzori2 avem: ',payload)
     elif message.topic == topic_1wire:
         if esteNumar(payload):
             q3.put(payload)

@@ -1,6 +1,6 @@
-import paho.mqtt.client as mqtt #importam biblioteca pentru clientul mqtt
+import paho.mqtt.client as mqtt #importam dintr-un moedul util pentru comunicarea cu serverul MQTT
+import mysql.connector #importam dintr-un modul util pentru comunicarea cu bazele de date MySQL 
 import time
-import mysql.connector
 
 client_id = 'rpi_pub_portocaliu' #numele clientului care sade aici, pe rpi
 port_insecure = 1883 #portul nesecurizat pentru mqtt
@@ -65,11 +65,11 @@ def on_log(client, userdata, level, buff):
 
 client = mqtt.Client(client_id, clean_session)
 client.bad_connection_flag = False #setam steagurile pentru client
-client.connected_flag = False
-client.on_connect = on_connect #adaugam callback-ul
-client.on_disconnect = on_disconnect
-client.on_publish = on_publish
-client.on_log = on_log
+client.connected_flag = False #initial nu suntem conectati
+client.on_connect = on_connect #setam o rutina care sa fie executata in momentul in care ne conectam
+client.on_disconnect = on_disconnect #setam o rutina care sa fie executata in momentul in care ne deconectam
+client.on_publish = on_publish #setam o rutina care sa fie executata in momentul in care publicam un mesaj
+client.on_log = on_log #setam o rutina care sa fie executata in momentul in care exista mesaje de "log"
 try:
     client.connect(host=host, port=port_insecure, keepalive=60, bind_address="") #omitem exceptiile
 except:
