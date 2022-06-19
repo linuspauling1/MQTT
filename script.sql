@@ -25,7 +25,7 @@ create table camere (
     diferenta decimal(3,1) default 10.0,
     numar_telefon varchar(10),
     primary key(nume_camera),
-    foreign key(numar_telefon) references utilizatori(numar_telefon) on update cascade
+    foreign key(numar_telefon) references utilizatori(numar_telefon) on update cascade on delete set null
 );
 -- trigger pentru prag_inferior la update si insert
 DELIMITER $$
