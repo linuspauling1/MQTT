@@ -101,7 +101,6 @@ while True:
 		except:
 			print('Nu avem populata baza de date a administratorului.')
 		if ora_a != ora_anterioara_a:
-			print('albastra')
 			ora_anterioara_a = ora_a
 			if temperatura_medie_a < prag_inferior_a:
 				mesaj = 'Temperatura este prea mica in camera albastra!'
@@ -139,4 +138,4 @@ while True:
 		except:
 			print('Reconectarea la baza de date esuata...')
 	#intarziere:
-	time.sleep(1)
+	time.sleep(30) #alegem perioada ca fiind de numatate de  minut
